@@ -2,31 +2,28 @@ name: 每日同步WPS数据
 
 on:
   schedule:
-    # 每天 UTC 17:00（北京时间凌晨 1:00）运行
     - cron: '0 17 * * *'
-  workflow_dispatch: # 允许手动点击运行，方便调试
+  workflow_dispatch:
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: 拉取仓库代码
         uses: actions/checkout@v4
-
       - name: 安装 Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: 安装依赖
         run: pip install requests
-
       - name: 执行抓取脚本
         env:
           WPS_WEBHOOK_URL: ${{ secrets.WPS_WEBHOOK_URL }}
           WPS_API_TOKEN: ${{ secrets.WPS_API_TOKEN }}
         run: python fetch_data.py
-
       - name: 提交更新后的 data.json
         run: |
           git config --global user.name 'github-actions[bot]'
