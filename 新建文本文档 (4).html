@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仓库运营概览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+    background: #fbfbfc;
+    color: #0a0a0a;
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding: 48px 32px 80px;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .app { max-width: 1120px; margin: 0 auto; }
+
+  /* ============ 页头 ============ */
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+  .head h1 {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #0a0a0a;
+  }
+  .head .meta {
+    font-size: 12.5px;
+    color: #9ca3af;
+    margin-top: 6px;
+    letter-spacing: 0.01em;
+  }
+  .head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  select {
+    appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M1 1l3.5 3L8 1' stroke='%239ca3af' stroke-width='1.3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 13px center;
+    border: 1px solid #e8eaee;
+    border-radius: 8px;
+    padding: 8px 32px 8px 13px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: 0.15s;
+    letter-spacing: 0.01em;
+  }
+  select:hover { border-color: #d5d9e0; }
+  select:focus { outline: none; border-color: #0a0a0a; }
+
+  .btn-icon {
+    width: 34px; height: 34px;
+    background: #fff;
+    border: 1px solid #e8eaee;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: 0.15s;
+  }
+  .btn-icon:hover { border-color: #d5d9e0; color: #0a0a0a; }
+  .btn-icon svg { transition: transform 0.5s; }
+  .btn-icon.spin svg { animation: spin 0.6s linear; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============ 总览数字 ============ */
+  .summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    padding-bottom: 40px;
+    margin-bottom: 44px;
+    border-bottom: 1px solid #ebedf0;
+    flex-wrap: wrap;
+  }
+  .stat {
+    flex: 1;
+    min-width: 130px;
+    padding-right: 24px;
+  }
+  .stat + .stat {
+    padding-left: 32px;
+    border-left: 1px solid #ebedf0;
+  }
+  .stat .label {
+    display: block;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
+  }
+  .stat .value {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    color: #0a0a0a;
+  }
+  .stat .value small {
+    font-size: 14px;
+    font-weight: 500;
+    color: #9ca3af;
+    letter-spacing: 0;
+    margin-left: 3px;
+  }
+  .stat .value.red { color: #dc2626; }
+  .stat .value.amber { color: #d97706; }
+  .stat .sub {
+    display: block;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 9px;
+    letter-spacing: 0.01em;
+  }
+  .stat .sub b { color: #6b7280; font-weight: 500; }
+
+  /* ============ 分区 ============ */
+  .section { margin-bottom: 48px; }
+  .section:last-child { margin-bottom: 0; }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+  .section-head h2 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .section-head .count {
+    font-size: 12px;
+    color: #9ca3af;
+    letter-spacing: 0.02em;
+  }
+
+  /* ============ 表格 ============ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #9ca3af;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #ebedf0;
+    white-space: nowrap;
+  }
+  thead th.num { text-align: right; }
+  tbody td {
+    padding: 17px 0;
+    border-bottom: 1px solid #f1f2f5;
+    font-size: 13.5px;
+    color: #374151;
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #fafbfc; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.name {
+    font-weight: 500;
+    color: #0a0a0a;
+    letter-spacing: -0.005em;
+  }
+  td.name .code {
+    color: #c4c8d0;
+    font-weight: 400;
+    margin-right: 10px;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  td.dim { color: #9ca3af; }
+
+  /* ---- 使用率单元格 ---- */
+  .rate {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 11px;
+  }
+  .rate-bar {
+    width: 52px;
+    height: 4px;
+    background: #eef0f3;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .rate-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background: #0a0a0a;
+    transition: width 0.4s ease;
+  }
+  .rate-bar i.red { background: #dc2626; }
+  .rate-bar i.amber { background: #d97706; }
+  .rate-num {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #374151;
+    min-width: 48px;
+    text-align: right;
+  }
+  .rate-num.red { color: #dc2626; }
+  .rate-num.amber { color: #d97706; }
+
+  /* ---- 状态文字 ---- */
+  .status {
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .status.red { color: #dc2626; }
+  .status.amber { color: #d97706; }
+  .status.blue { color: #2563eb; }
+  .status.gray { color: #9ca3af; }
+
+  /* ---- 异常清单问题列 ---- */
+  td.problem {
+    color: #6b7280;
+    font-size: 13px;
+  }
+  td.problem .tag {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 5px;
+    margin-right: 9px;
+    letter-spacing: 0.02em;
+    vertical-align: 1px;
+  }
+  td.problem .tag.red { background: #fef2f2; color: #dc2626; }
+  td.problem .tag.amber { background: #fffbeb; color: #b45309; }
+  td.problem .tag.blue { background: #eff6ff; color: #2563eb; }
+
+  /* ---- 空状态 ---- */
+  .empty {
+    padding: 40px 0 44px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+  .empty svg {
+    display: block;
+    margin: 0 auto 14px;
+    color: #d1d5db;
+  }
+
+  /* ---- 响应式 ---- */
+  @media (max-width: 760px) {
+    body { padding: 28px 18px 60px; }
+    .head { margin-bottom: 28px; }
+    .stat .value { font-size: 24px; }
+    .stat { min-width: 100px; padding-right: 16px; }
+    .stat + .stat { padding-left: 18px; }
+    .table-wrap { overflow-x: auto; }
+    table { min-width: 640px; }
+    .rate-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="head">
+    <div>
+      <h1>仓库运营概览</h1>
+      <p class="meta" id="metaLine">—</p>
+    </div>
+    <div class="head-actions">
+      <select id="whSelect"></select>
+      <button class="btn-icon" id="btnRefresh" title="刷新">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.6H9.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="summary"></div>
+
+  <section class="section" id="whSection"></section>
+
+  <section class="section" id="alertSection"></section>
+
+</div>
+
+<script>
+/* =========================================================================
+   1. 阈值
+   ========================================================================= */
+const T = {
+  severe: 92,     // 使用率 ≥ 92% → 告急
+  warning: 85,    // ≥ 85% → 偏紧
+  low: 30,        // ≤ 30% 且库位 ≥ 50 → 空置
+  overdueDays: 90
+};
+
+/* =========================================================================
+   2. 仓库配置
+   ========================================================================= */
+const WAREHOUSES = [
+  {
+    id: 'WH-01', name: '华东中心仓', meta: '上海 · 青浦',
+    zones: [
+      { key:'A', name:'A区 · 高位货架', rows:40, cols:24, layers:3, slotVol:2.4, fill:0.94 },
+      { key:'B', name:'B区 · 高位货架', rows:36, cols:20, layers:3, slotVol:2.4, fill:0.62 },
+      { key:'C', name:'C区 · 平库存储', rows:30, cols:18, layers:2, slotVol:1.8, fill:0.88 },
+      { key:'D', name:'D区 · 暂存/呆滞', rows:24, cols:16, layers:2, slotVol:1.5, fill:0.22 }
+    ]
+  },
+  {
+    id: 'WH-02', name: '华南枢纽仓', meta: '广州 · 白云',
+    zones: [
+      { key:'A', name:'A区 · 高位货架', rows:32, cols:20, layers:3, slotVol:2.2, fill:0.68 },
+      { key:'B', name:'B区 · 高位货架', rows:30, cols:18, layers:3, slotVol:2.2, fill:0.91 },
+      { key:'C', name:'C区 · 平库存储', rows:26, cols:16, layers:2, slotVol:1.8, fill:0.55 },
+      { key:'D', name:'D区 · 暂存/呆滞', rows:20, cols:14, layers:2, slotVol:1.5, fill:0.76 }
+    ]
+  },
+  {
+    id: 'WH-03', name: '华北分拨仓', meta: '天津 · 武清',
+    zones: [
+      { key:'A', name:'A区 · 高位货架', rows:28, cols:20, layers:2, slotVol:2.4, fill:0.51 },
+      { key:'B', name:'B区 · 高位货架', rows:26, cols:18, layers:2, slotVol:2.4, fill:0.58 },
+      { key:'C', name:'C区 · 平库存储', rows:24, cols:16, layers:2, slotVol:1.8, fill:0.72 },
+      { key:'D', name:'D区 · 暂存/呆滞', rows:20, cols:14, layers:1, slotVol:1.5, fill:0.66 }
+    ]
+  },
+  {
+    id: 'WH-04', name: '西南集散仓', meta: '成都 · 双流',
+    zones: [
+      { key:'A', name:'A区 · 高位货架', rows:26, cols:16, layers:2, slotVol:2.0, fill:0.96 },
+      { key:'B', name:'B区 · 高位货架', rows:24, cols:16, layers:2, slotVol:2.0, fill:0.74 },
+      { key:'C', name:'C区 · 平库存储', rows:20, cols:14, layers:2, slotVol:1.6, fill:0.83 },
+      { key:'D', name:'D区 · 暂存/呆滞', rows:18, cols:12, layers:1, slotVol:1.5, fill:0.35 }
+    ]
+  }
+];
+
+/* =========================================================================
+   3. 数据计算
+   ========================================================================= */
+function hash(str){
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function rng(seed){
+  let a = seed;
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+let SALT = 0;
+let CACHE = {};
+
+function computeZone(wh, zone){
+  const cacheKey = wh.id + '|' + zone.key + '|' + SALT;
+  if (CACHE[cacheKey]) return CACHE[cacheKey];
+
+  const rand = rng(hash(cacheKey));
+  const total = zone.rows * zone.cols * zone.layers;
+  const occupied = Math.round(total * zone.fill);
+  const empty = total - occupied;
+
+  // 平均单库位填充率 0.78 ~ 0.95
+  const avgFill = 0.78 + rand() * 0.17;
+  const totalVol = total * zone.slotVol;
+  const usedVol = occupied * zone.slotVol * avgFill;
+  const rate = totalVol ? +(usedVol / totalVol * 100).toFixed(1) : 0;
+
+  // 超期：使用率越高、库龄越长
+  const overdueRatio = zone.fill > 0.9 ? (0.06 + rand() * 0.05)
+                     : zone.fill > 0.8 ? (0.03 + rand() * 0.03)
+                     : (0.005 + rand() * 0.015);
+  const overdue = Math.round(occupied * overdueRatio);
+
+  // 平均库龄：与填充率正相关 + 随机
+  const avgAge = Math.round(24 + zone.fill * 38 + rand() * 12);
+
+  const r = {
+    zone,
+    total, occupied, empty,
+    totalVol: +totalVol.toFixed(1),
+    usedVol: +usedVol.toFixed(1),
+    freeVol: +(totalVol - usedVol).toFixed(1),
+    rate,
+    overdue,
+    avgAge
+  };
+  CACHE[cacheKey] = r;
+  return r;
+}
+
+function computeWarehouse(wh){
+  let total = 0, occupied = 0, empty = 0;
+  let totalVol = 0, usedVol = 0;
+  let overdue = 0, ageWeighted = 0;
+  const zones = [];
+
+  wh.zones.forEach(z => {
+    const d = computeZone(wh, z);
+    zones.push(d);
+    total += d.total;
+    occupied += d.occupied;
+    empty += d.empty;
+    totalVol += d.totalVol;
+    usedVol += d.usedVol;
+    overdue += d.overdue;
+    ageWeighted += d.avgAge * d.occupied;
+  });
+
+  const rate = totalVol ? +(usedVol / totalVol * 100).toFixed(1) : 0;
+  return {
+    wh, zones,
+    total, occupied, empty,
+    totalVol: +totalVol.toFixed(1),
+    usedVol: +usedVol.toFixed(1),
+    freeVol: +(totalVol - usedVol).toFixed(1),
+    rate,
+    overdue,
+    avgAge: occupied ? Math.round(ageWeighted / occupied) : 0
+  };
+}
+
+/* 收集所有异常区域 */
+function collectAlerts(whList){
+  const alerts = [];
+
+  whList.forEach(wh => {
+    wh.zones.forEach(zone => {
+      const d = computeZone(wh, zone);
+      const issues = [];
+
+      if (d.rate >= T.severe){
+        issues.push({ level: 'red', tag: '容量告急', text: `使用率 ${d.rate}%，仅剩 ${d.empty} 个空位` });
+      } else if (d.rate >= T.warning){
+        issues.push({ level: 'amber', tag: '容量偏紧', text: `使用率 ${d.rate}%，剩余 ${d.empty} 个空位` });
+      }
+
+      if (d.overdue > 0){
+        issues.push({ level: d.overdue >= 20 ? 'red' : 'amber', tag: '超期库存', text: `${d.overdue} 个库位超过 ${T.overdueDays} 天` });
+      }
+
+      if (d.rate <= T.low && d.total >= 50){
+        issues.push({ level: 'blue', tag: '空置过多', text: `使用率仅 ${d.rate}%，${d.empty} 个库位闲置` });
+      }
+
+      if (issues.length){
+        const rank = { red: 0, amber: 1, blue: 2 };
+        issues.sort((a, b) => rank[a.level] - rank[b.level]);
+        alerts.push({ wh, zone, data: d, issues, level: issues[0].level });
+      }
+    });
+  });
+
+  const rank = { red: 0, amber: 1, blue: 2 };
+  alerts.sort((a, b) => rank[a.level] - rank[b.level]);
+  return alerts;
+}
+
+/* 全量汇总 */
+function computeTotal(whList){
+  let total = 0, occupied = 0, empty = 0, totalVol = 0, usedVol = 0;
+  let overdue = 0, ageWeighted = 0;
+
+  whList.forEach(wh => {
+    const d = computeWarehouse(wh);
+    total += d.total;
+    occupied += d.occupied;
+    empty += d.empty;
+    totalVol += d.totalVol;
+    usedVol += d.usedVol;
+    overdue += d.overdue;
+    ageWeighted += d.avgAge * d.occupied;
+  });
+
+  const rate = totalVol ? +(usedVol / totalVol * 100).toFixed(1) : 0;
+  return {
+    total, occupied, empty,
+    totalVol: +totalVol.toFixed(1),
+    usedVol: +usedVol.toFixed(1),
+    freeVol: +(totalVol - usedVol).toFixed(1),
+    rate,
+    overdue,
+    avgAge: occupied ? Math.round(ageWeighted / occupied) : 0
+  };
+}
+
+/* =========================================================================
+   4. 渲染工具
+   ========================================================================= */
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function n(v){ return Number(v).toLocaleString('en-US'); }
+function rateClass(r){
+  if (r >= T.severe) return 'red';
+  if (r >= T.warning) return 'amber';
+  return '';
+}
+function rateBarWidth(r){
+  return Math.min(100, Math.max(2, r));
+}
+function statusOf(r, total, empty){
+  if (r >= T.severe) return { text: '告急', cls: 'red' };
+  if (r >= T.warning) return { text: '偏紧', cls: 'amber' };
+  if (r <= T.low && total >= 50) return { text: '空置', cls: 'blue' };
+  return { text: '正常', cls: 'gray' };
+}
+
+/* =========================================================================
+   5. 渲染 —— 总览数字
+   ========================================================================= */
+function renderSummary(whList){
+  const s = computeTotal(whList);
+  const isAll = whList.length === WAREHOUSES.length;
+
+  const html = `
+    <div class="summary">
+      <div class="stat">
+        <span class="label">总库位</span>
+        <div class="value">${n(s.total)}</div>
+        <span class="sub">${isAll ? WAREHOUSES.length + ' 个仓库' : whList[0].name}</span>
+      </div>
+      <div class="stat">
+        <span class="label">已用库位</span>
+        <div class="value">${n(s.occupied)}</div>
+        <span class="sub">空余 <b>${n(s.empty)}</b> 个</span>
+      </div>
+      <div class="stat">
+        <span class="label">整体使用率</span>
+        <div class="value ${rateClass(s.rate)}">${s.rate}<small>%</small></div>
+        <span class="sub">${n(s.usedVol)} / ${n(s.totalVol)} m³</span>
+      </div>
+      <div class="stat">
+        <span class="label">超期库位</span>
+        <div class="value ${s.overdue > 0 ? 'red' : ''}">${n(s.overdue)}</div>
+        <span class="sub">库龄 ≥ ${T.overdueDays} 天</span>
+      </div>
+      <div class="stat">
+        <span class="label">平均库龄</span>
+        <div class="value">${s.avgAge}<small>天</small></div>
+        <span class="sub">在库加权</span>
+      </div>
+    </div>
+  `;
+  document.getElementById('summary').innerHTML = html;
+}
+
+/* =========================================================================
+   6. 渲染 —— 各仓库汇总表
+   ========================================================================= */
+function renderWarehouseTable(whList){
+  const rows = whList.map(wh => {
+    const d = computeWarehouse(wh);
+    const cls = rateClass(d.rate);
+    const st = statusOf(d.rate, d.total, d.empty);
+    return `
+      <tr>
+        <td class="name"><span class="code">${esc(wh.id)}</span>${esc(wh.name)}</td>
+        <td class="num">${n(d.total)}</td>
+        <td>
+          <div class="rate">
+            <div class="rate-bar"><i class="${cls}" style="width:${rateBarWidth(d.rate)}%"></i></div>
+            <span class="rate-num ${cls}">${d.rate}%</span>
+          </div>
+        </td>
+        <td class="num ${d.empty < 100 ? 'name' : 'dim'}">${n(d.empty)}</td>
+        <td class="num ${d.overdue > 0 ? 'name' : 'dim'}">${n(d.overdue)}</td>
+        <td class="num dim">${d.avgAge} 天</td>
+        <td class="status ${st.cls}">${st.text}</td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('whSection').innerHTML = `
+    <div class="section-head">
+      <h2>各仓库状况</h2>
+      <span class="count">${whList.length} 个仓库</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>仓库</th>
+            <th class="num">库位数</th>
+            <th style="width:180px;">使用率</th>
+            <th class="num">空位</th>
+            <th class="num">超期</th>
+            <th class="num">平均库龄</th>
+            <th style="width:70px;">状态</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* =========================================================================
+   7. 渲染 —— 需要关注的区域
+   ========================================================================= */
+function renderAlerts(whList){
+  const alerts = collectAlerts(whList);
+  const section = document.getElementById('alertSection');
+
+  if (!alerts.length){
+    section.innerHTML = `
+      <div class="section-head">
+        <h2>需要关注的区域</h2>
+        <span class="count">0 项</span>
+      </div>
+      <div class="empty">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 12l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        所有区域运行正常，暂无需关注的异常
+      </div>
+    `;
+    return;
+  }
+
+  const rows = alerts.map(a => {
+    const issue = a.issues[0];
+    const cls = rateClass(a.data.rate);
+    return `
+      <tr>
+        <td class="name">${esc(a.zone.name)}</td>
+        <td class="dim">${esc(a.wh.name)}</td>
+        <td>
+          <div class="rate">
+            <div class="rate-bar"><i class="${cls}" style="width:${rateBarWidth(a.data.rate)}%"></i></div>
+            <span class="rate-num ${cls}">${a.data.rate}%</span>
+          </div>
+        </td>
+        <td class="num dim">${n(a.data.empty)}</td>
+        <td class="num ${a.data.overdue > 0 ? 'name' : 'dim'}">${n(a.data.overdue)}</td>
+        <td class="problem">
+          <span class="tag ${issue.level}">${esc(issue.tag)}</span>${esc(issue.text)}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  const severeCount = alerts.filter(a => a.level === 'red').length;
+
+  section.innerHTML = `
+    <div class="section-head">
+      <h2>需要关注的区域</h2>
+      <span class="count">${alerts.length} 项${severeCount ? ' · 其中 ' + severeCount + ' 项严重' : ''}</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>区域</th>
+            <th>所属仓库</th>
+            <th style="width:180px;">使用率</th>
+            <th class="num">空位</th>
+            <th class="num">超期</th>
+            <th>问题</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* =========================================================================
+   8. 主渲染
+   ========================================================================= */
+let currentWhId = 'ALL';
+
+function currentWhList(){
+  if (currentWhId === 'ALL') return WAREHOUSES;
+  const w = WAREHOUSES.find(x => x.id === currentWhId);
+  return w ? [w] : WAREHOUSES;
+}
+
+function render(){
+  const list = currentWhList();
+
+  // 页头信息
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('metaLine').textContent =
+    currentWhId === 'ALL'
+      ? `全部仓库 · 数据截至 ${dateStr} ${timeStr}`
+      : `${list[0].name} · ${list[0].meta} · 数据截至 ${dateStr} ${timeStr}`;
+
+  renderSummary(list);
+  renderWarehouseTable(list);
+  renderAlerts(list);
+}
+
+/* =========================================================================
+   9. 交互
+   ========================================================================= */
+function initSelect(){
+  const sel = document.getElementById('whSelect');
+  sel.innerHTML =
+    `<option value="ALL">全部仓库</option>` +
+    WAREHOUSES.map(w => `<option value="${w.id}">${esc(w.id)} · ${esc(w.name)}</option>`).join('');
+  sel.value = currentWhId;
+}
+
+document.getElementById('whSelect').addEventListener('change', function(){
+  currentWhId = this.value;
+  render();
+});
+
+document.getElementById('btnRefresh').addEventListener('click', function(){
+  const btn = this;
+  btn.classList.add('spin');
+  btn.disabled = true;
+
+  SALT = Math.floor(Math.random() * 100000);
+  CACHE = {};
+
+  setTimeout(() => {
+    render();
+    btn.classList.remove('spin');
+    btn.disabled = false;
+  }, 420);
+});
+
+/* =========================================================================
+   10. 启动
+   ========================================================================= */
+initSelect();
+render();
+</script>
+</body>
+</html>
