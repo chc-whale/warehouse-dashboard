@@ -16,12 +16,26 @@ headers = {
 
 # 1. 调用 WPS AirScript，获取表格数据
 try:
-    response = requests.post(WEBHOOK_URL, headers=headers)
+    # 补上 Content-Type 和 JSON body，WPS 需要这些才会接受请求
+    headers["Content-Type"] = "application/json"
+    body = {
+        "Context": {
+            "argv": {}
+        }
+    }
+    response = requests.post(WEBHOOK_URL, headers=headers, json=body, timeout=60)
     response.raise_for_status()
+    
+    # 打印原始返回内容，方便调试（如果报错，能看到 WPS 返回的具体信息）
+    print("WPS 原始返回:", response.text[:500])
+    
     raw_data = response.json()
     print("✅ WPS 数据拉取成功")
 except Exception as e:
     print(f"❌ 请求 WPS 失败: {e}")
+    # 如果有返回体，把返回体也打出来，能看到更具体的原因
+    if 'response' in locals():
+        print(f"WPS 返回内容: {response.text[:1000]}")
     exit(1)
 
 # 2. 把 WPS 返回的二维数组，转换成 HTML 需要的结构
