@@ -20,7 +20,9 @@ body = {"Context": {"argv": {}}}
 try:
     response = requests.post(WEBHOOK_URL, headers=headers, json=body, timeout=60)
     response.raise_for_status()
-    print("WPS 原始返回:", response.text[:2000])
+    print("========= WPS 完整返回 =========")
+print(response.text)
+print("================================")
 except Exception as e:
     print(f"❌ 请求失败: {e}")
     if 'response' in locals():
