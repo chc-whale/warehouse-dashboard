@@ -16,7 +16,6 @@ headers = {
 
 # 1. 调用 WPS AirScript，获取表格数据
 try:
-    # 补上 Content-Type 和 JSON body，WPS 需要这些才会接受请求
     headers["Content-Type"] = "application/json"
     body = {
         "Context": {
@@ -26,22 +25,33 @@ try:
     response = requests.post(WEBHOOK_URL, headers=headers, json=body, timeout=60)
     response.raise_for_status()
     
-    # 打印原始返回内容，方便调试（如果报错，能看到 WPS 返回的具体信息）
-    print("WPS 原始返回:", response.text[:500])
+    # 打印 WPS 的原始返回，方便排查（非常重要！）
+    print("WPS 原始返回:", response.text[:1000])
     
-    raw_data = response.json()
-    print("✅ WPS 数据拉取成功")
+    parsed = response.json()
+    # 兼容 WPS 可能返回的多种格式
+    if isinstance(parsed, list):
+        records = parsed
+    elif isinstance(parsed, dict):
+        records = parsed.get('data', [])
+        if isinstance(records, str):
+            records = json.loads(records)
+    else:
+        records = []
+    
+    print(f"✅ 解析到 {len(records)} 行数据")
 except Exception as e:
     print(f"❌ 请求 WPS 失败: {e}")
-    # 如果有返回体，把返回体也打出来，能看到更具体的原因
     if 'response' in locals():
         print(f"WPS 返回内容: {response.text[:1000]}")
     exit(1)
 
-# 2. 把 WPS 返回的二维数组，转换成 HTML 需要的结构
-# WPS 返回格式类似：[["抖音仓","爆品拣货区",36,22,2,1.6,800,20,45], ...]
-records = raw_data if isinstance(raw_data, list) else raw_data.get('data', [])
 
+# 2. 跳过第一行（防止表头混入），如果 WPS 已经跳过表头，这行也无妨
+if len(records) > 0:
+    records = records[1:] if str(records[0][0]).strip() in ['仓库', '区域'] else records
+
+# 3. 把 WPS 返回的二维数组，转换成 HTML 需要的结构
 warehouses = {}
 for row in records:
     if not row or len(row) < 9:
