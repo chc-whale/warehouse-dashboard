@@ -2,74 +2,87 @@ import os
 import json
 import requests
 
-# 从GitHub Secrets中读取密钥（不要直接写在代码里！）
 WEBHOOK_URL = os.environ.get("WPS_WEBHOOK_URL")
 API_TOKEN = os.environ.get("WPS_API_TOKEN")
 
 if not WEBHOOK_URL or not API_TOKEN:
-    print("❌ 错误：缺少环境变量 WPS_WEBHOOK_URL 或 WPS_API_TOKEN")
+    print("❌ 缺少环境变量")
     exit(1)
 
 headers = {
-    "AirScript-Token": API_TOKEN
+    "AirScript-Token": API_TOKEN,
+    "Content-Type": "application/json"
 }
 
-# 1. 调用 WPS AirScript，获取表格数据
+body = {"Context": {"argv": {}}}
+
+# ========== 1. 请求 WPS ==========
 try:
-    headers["Content-Type"] = "application/json"
-    body = {
-        "Context": {
-            "argv": {}
-        }
-    }
     response = requests.post(WEBHOOK_URL, headers=headers, json=body, timeout=60)
     response.raise_for_status()
-    
-    # 打印 WPS 的原始返回，方便排查（非常重要！）
-    print("WPS 原始返回:", response.text[:1000])
-    
-    parsed = response.json()
-    # 兼容 WPS 可能返回的多种格式
-    if isinstance(parsed, list):
-        records = parsed
-    elif isinstance(parsed, dict):
-        records = parsed.get('data', [])
-        if isinstance(records, str):
-            records = json.loads(records)
-    else:
-        records = []
-    
-    print(f"✅ 解析到 {len(records)} 行数据")
+    print("WPS 原始返回:", response.text[:2000])
 except Exception as e:
-    print(f"❌ 请求 WPS 失败: {e}")
+    print(f"❌ 请求失败: {e}")
     if 'response' in locals():
-        print(f"WPS 返回内容: {response.text[:1000]}")
+        print(f"返回内容: {response.text[:1000]}")
     exit(1)
 
+# ========== 2. 解析返回 ==========
+parsed = response.json()
+records = []
 
-# 2. 跳过第一行（防止表头混入），如果 WPS 已经跳过表头，这行也无妨
-if len(records) > 0:
-    records = records[1:] if str(records[0][0]).strip() in ['仓库', '区域'] else records
+if isinstance(parsed, dict):
+    data_obj = parsed.get("data", {})
+    if isinstance(data_obj, dict):
+        result_str = data_obj.get("result", "")
+        if result_str and result_str != "[Undefined]":
+            if isinstance(result_str, str):
+                try:
+                    records = json.loads(result_str)
+                except Exception as e:
+                    print(f"❌ result 不是有效 JSON: {e}")
+                    records = []
+            elif isinstance(result_str, list):
+                records = result_str
+elif isinstance(parsed, list):
+    records = parsed
 
-# 3. 把 WPS 返回的二维数组，转换成 HTML 需要的结构
+print(f"✅ 解析到 {len(records)} 行原始数据")
+
+# ========== 3. 过滤表头 ==========
+if records and str(records[0][0]).strip() in ['仓库', '区域']:
+    records = records[1:]
+    print(f"✅ 跳过表头后剩余 {len(records)} 行")
+
+# ========== 4. 工具函数 ==========
+def to_int(v, d=0):
+    try: return int(float(v))
+    except: return d
+
+def to_float(v, d=0.0):
+    try: return float(v)
+    except: return d
+
+# ========== 5. 组装数据 ==========
 warehouses = {}
+
 for row in records:
     if not row or len(row) < 9:
         continue
     
-    wh_name = str(row[0]).strip()      # 仓库
-    zone_name = str(row[1]).strip()    # 区域
-    rows = int(row[2]) if row[2] else 0      # 排
-    cols = int(row[3]) if row[3] else 0      # 列
-    layers = int(row[4]) if row[4] else 1    # 层
-    slot_vol = float(row[5]) if row[5] else 0  # 单库位容积
-    occupied = int(row[6]) if row[6] else 0    # 已用
-    overdue = int(row[7]) if row[7] else 0     # 超期数
-    avg_age = float(row[8]) if row[8] else 0   # 平均库龄
-
-    total_slots = rows * cols * layers
-    fill = occupied / total_slots if total_slots > 0 else 0
-
+    wh_name    = str(row[0]).strip()
+    zone_name  = str(row[1]).strip()
+    rows       = to_int(row[2])
+    cols       = to_int(row[3])
+    layers     = to_int(row[4], 1)
+    slot_vol   = to_float(row[5])
+    occupied   = to_int(row[6])
+    overdue    = to_int(row[7])
+    avg_age    = to_float(row[8])
+    
+    total = rows * cols * layers
+    fill = occupied / total if total > 0 else 0
+    
     if wh_name not in warehouses:
         warehouses[wh_name] = {
             "id": wh_name,
@@ -91,8 +104,8 @@ for row in records:
         "avgAge": avg_age
     })
 
-# 3. 输出成 data.json
 output = list(warehouses.values())
+
 with open('data.json', 'w', encoding='utf-8') as f:
     json.dump(output, f, ensure_ascii=False, indent=2)
 
