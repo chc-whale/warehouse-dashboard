@@ -1,1 +1,184 @@
-[]
+[
+  {
+    "id": "抖音仓",
+    "name": "抖音仓",
+    "meta": "WPS 自动同步",
+    "zones": [
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 1,
+        "cols": 22,
+        "layers": 2,
+        "slotVol": 11.0,
+        "fill": 0.25,
+        "occupied": 11,
+        "overdue": 1,
+        "avgAge": 1.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 2,
+        "cols": 5,
+        "layers": 6,
+        "slotVol": 7.0,
+        "fill": 0.13333333333333333,
+        "occupied": 8,
+        "overdue": 9,
+        "avgAge": 10.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 3,
+        "cols": 6,
+        "layers": 7,
+        "slotVol": 8.0,
+        "fill": 0.07142857142857142,
+        "occupied": 9,
+        "overdue": 10,
+        "avgAge": 11.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 4,
+        "cols": 7,
+        "layers": 8,
+        "slotVol": 9.0,
+        "fill": 0.044642857142857144,
+        "occupied": 10,
+        "overdue": 11,
+        "avgAge": 12.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 5,
+        "cols": 8,
+        "layers": 9,
+        "slotVol": 10.0,
+        "fill": 0.030555555555555555,
+        "occupied": 11,
+        "overdue": 12,
+        "avgAge": 13.0
+      }
+    ]
+  },
+  {
+    "id": "京东仓",
+    "name": "京东仓",
+    "meta": "WPS 自动同步",
+    "zones": [
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 6,
+        "cols": 9,
+        "layers": 10,
+        "slotVol": 11.0,
+        "fill": 0.022222222222222223,
+        "occupied": 12,
+        "overdue": 13,
+        "avgAge": 14.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 7,
+        "cols": 10,
+        "layers": 11,
+        "slotVol": 12.0,
+        "fill": 0.016883116883116882,
+        "occupied": 13,
+        "overdue": 14,
+        "avgAge": 15.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 8,
+        "cols": 11,
+        "layers": 12,
+        "slotVol": 13.0,
+        "fill": 0.013257575757575758,
+        "occupied": 14,
+        "overdue": 15,
+        "avgAge": 16.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 9,
+        "cols": 12,
+        "layers": 13,
+        "slotVol": 14.0,
+        "fill": 0.010683760683760684,
+        "occupied": 15,
+        "overdue": 16,
+        "avgAge": 17.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 10,
+        "cols": 13,
+        "layers": 14,
+        "slotVol": 15.0,
+        "fill": 0.008791208791208791,
+        "occupied": 16,
+        "overdue": 17,
+        "avgAge": 18.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 11,
+        "cols": 14,
+        "layers": 15,
+        "slotVol": 16.0,
+        "fill": 0.00735930735930736,
+        "occupied": 17,
+        "overdue": 18,
+        "avgAge": 19.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 12,
+        "cols": 15,
+        "layers": 16,
+        "slotVol": 17.0,
+        "fill": 0.00625,
+        "occupied": 18,
+        "overdue": 19,
+        "avgAge": 20.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 13,
+        "cols": 16,
+        "layers": 17,
+        "slotVol": 18.0,
+        "fill": 0.0053733031674208145,
+        "occupied": 19,
+        "overdue": 20,
+        "avgAge": 21.0
+      },
+      {
+        "key": "爆品拣货区",
+        "name": "爆品拣货区",
+        "rows": 14,
+        "cols": 17,
+        "layers": 18,
+        "slotVol": 19.0,
+        "fill": 0.004668534080298786,
+        "occupied": 20,
+        "overdue": 21,
+        "avgAge": 22.0
+      }
+    ]
+  }
+]
