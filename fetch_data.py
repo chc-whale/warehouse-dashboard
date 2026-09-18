@@ -20,13 +20,9 @@ body = {"Context": {"argv": {}}}
 try:
     response = requests.post(WEBHOOK_URL, headers=headers, json=body, timeout=60)
     response.raise_for_status()
-    print("========= WPS 完整返回 =========")
-print(response.text)
-print("================================")
+    print("WPS 原始返回:", response.text[:2000])
 except Exception as e:
     print(f"❌ 请求失败: {e}")
-    if 'response' in locals():
-        print(f"返回内容: {response.text[:1000]}")
     exit(1)
 
 # ========== 2. 解析返回 ==========
@@ -71,20 +67,20 @@ warehouses = {}
 for row in records:
     if not row or len(row) < 9:
         continue
-    
-    wh_name    = str(row[0]).strip()
-    zone_name  = str(row[1]).strip()
-    rows       = to_int(row[2])
-    cols       = to_int(row[3])
-    layers     = to_int(row[4], 1)
-    slot_vol   = to_float(row[5])
-    occupied   = to_int(row[6])
-    overdue    = to_int(row[7])
-    avg_age    = to_float(row[8])
-    
+
+    wh_name   = str(row[0]).strip()
+    zone_name = str(row[1]).strip()
+    rows      = to_int(row[2])
+    cols      = to_int(row[3])
+    layers    = to_int(row[4], 1)
+    slot_vol  = to_float(row[5])
+    occupied  = to_int(row[6])
+    overdue   = to_int(row[7])
+    avg_age   = to_float(row[8])
+
     total = rows * cols * layers
     fill = occupied / total if total > 0 else 0
-    
+
     if wh_name not in warehouses:
         warehouses[wh_name] = {
             "id": wh_name,
@@ -92,7 +88,7 @@ for row in records:
             "meta": "WPS 自动同步",
             "zones": []
         }
-    
+
     warehouses[wh_name]["zones"].append({
         "key": zone_name,
         "name": zone_name,
